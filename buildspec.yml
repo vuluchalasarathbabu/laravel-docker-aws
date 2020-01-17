@@ -8,10 +8,13 @@ phases:
     commands:
     - echo Logging in to Amazon ECR....
     - aws --version
+    - curl -fsSL https://get.docker.com -o get-docker.sh
+    - sh get-docker.sh
     # login to Elastic container registry
-    - eval $(aws ecr get-login --region ap-southeast-2 --no-include-email | sed 's|https://||')
-    - REPOSITORY_URI=650749741049.dkr.ecr.ap-southeast-2.amazonaws.com/gbxnga/laravel-docker-aws
-    - IMAGE_TAG=1.0
+    - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+    - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+    - REPOSITORY_URI=651088187661.dkr.ecr.ap-south-1.amazonaws.com/laravel-docker
+    - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
     - echo Build started on `date`
@@ -29,4 +32,4 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker image ls -a
-      - docker push $REPOSITORY_URI:$IMAGE_TAG 
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
